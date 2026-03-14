@@ -1,48 +1,51 @@
 # Event-Driven Image Processing System with AWS SQS and SNS
 
-## Project Overview
-This project demonstrates the implementation of a decoupled architectural pattern using AWS services. The system transitioned from a monolithic, tightly coupled design (Phase 1) to an asynchronous, event-driven architecture (Phase 2). This setup improves system scalability, fault tolerance, and ensures that the web tier and application tier operate independently.
+## Project Description
+This project demonstrates the transition from a tightly coupled architecture to a decoupled, event-driven system using Amazon Web Services. The primary goal is to handle image processing tasks asynchronously, ensuring high availability and scalability by using message queuing and notification services.
 
 ## Lab Objectives Achieved
-* Configured Amazon S3 bucket events to trigger SNS notifications upon object creation.
-* Implemented an Amazon SNS topic to fan-out messages to SQS and Email endpoints.
-* Subscribed an Amazon SQS queue to an SNS topic to store processing tasks.
-* Developed a Node.js application server that implements long-polling to consume SQS messages.
-* Integrated Amazon DynamoDB for real-time image metadata and status tracking.
+* Implementation of a decoupled architecture using Amazon SQS and Amazon SNS.
+* Configuration of Amazon S3 bucket events to trigger automated workflows.
+* Deployment of an Application Server that utilizes long-polling to consume messages from a queue.
+* Real-time metadata tracking and status updates using Amazon DynamoDB.
+* Automated email notifications for system events via SNS.
 
 ## Technical Architecture
 
-### Phase 1: Tightly Coupled (Synchronous)
-The Web Server communicated directly with the Application Server via HTTP. If the App Server was down or busy, the user experience was directly impacted, and the request would fail.
+### Phase 1: Tightly Coupled Design
+The initial environment featured a synchronous connection between the Web Server and the Application Server. In this setup, the Web Server was dependent on the immediate availability of the Application Server to process images, creating a bottleneck and a single point of failure.
 
-### Phase 2: Decoupled (Asynchronous)
-The communication is now mediated by AWS messaging services:
-1. **Upload:** User uploads an image to **Amazon S3**.
-2. **Notify:** S3 sends an event to **Amazon SNS**.
-3. **Queue:** SNS pushes the message to **Amazon SQS**.
-4. **Process:** The **Application Server** polls SQS, processes the image using the **Sharp** library, and updates **Amazon DynamoDB**.
+### Phase 2: Decoupled Architecture (Final Implementation)
+The system was re-engineered to separate the tiers using a message-driven approach:
+1. **S3 Upload:** When a user uploads an image, it is stored in an S3 bucket.
+2. **SNS Notification:** S3 triggers an event that publishes a message to an SNS topic.
+3. **SQS Fan-out:** The SNS topic pushes the message to an SQS queue while simultaneously sending an email notification.
+4. **SQS Polling:** The Application Server polls the SQS queue independently. Once a message is retrieved, the server processes the image and deletes the message from the queue upon successful completion.
 
 ## Components and Services
-* **Compute:** Amazon EC2 (Node.js Environment).
-* **Messaging:** Amazon SQS (Queueing) & Amazon SNS (Pub/Sub).
-* **Storage:** Amazon S3 (Object Storage).
-* **Database:** Amazon DynamoDB (Metadata storage).
-* **Image Processing:** Sharp.js (Tinting and Resizing).
+* **Compute:** Amazon EC2 (Node.js)
+* **Messaging:** Amazon Simple Queue Service (SQS) & Amazon Simple Notification Service (SNS)
+* **Storage:** Amazon S3
+* **Database:** Amazon DynamoDB
+* **Library:** Sharp.js for image manipulation
 
 ## File Structure
-* **app-server/index.js**: Express server handling the polling control routes.
-* **app-server/libs/polling.js**: Core logic for SQS `receiveMessage` and `deleteMessage` operations.
-* **app-server/libs/config.js**: AWS Resource configuration (Queue URLs, Bucket names, Regions).
+* **app-server/index.js**: Express server hosting the polling control routes.
+* **app-server/libs/polling.js**: Core logic for SQS message consumption and image transformation.
+* **app-server/libs/config.js**: AWS resource configuration and endpoint mapping.
 
 ## Visual Documentation
 
-### Phase 1 vs Phase 2 Architecture
-![Architecture Phase 1](System-Architecture-Phase1.png)
-![Architecture Phase 2](System-Architecture-Phase2.png)
+### System Architecture - Phase 1
+![Phase 1 Architecture](System-Architecture-Phase1.png)
 
-### Application & Notifications
-![App Interface](Image%20Tinter%20app.png)
-![SNS Email Evidence](sns%20email.png)
+### System Architecture - Phase 2 (Decoupled Flow)
+![Phase 2 Architecture](System-Architecture-Phase2.png)
+
+
+### Processing Evidence and UI
+![SNS Email Notification](sns%20email.png)
+![Application Interface](Image%20Tinter%20app.png)
 
 ---
 *Verified Implementation of the Guided Lab: Building Decoupled Applications by Using Amazon SQS.*
